@@ -1,42 +1,15 @@
-# Pre-requsites
-# !pip install re
-# !pip install nltk
-
 
 # TEXT PREPROCESSING
 import re
-from nltk.corpus import stopwords
-from nltk.stem.porter import PorterStemmer
+from nltk.stem import WordNetLemmatizer
+
+import re
+from nltk.stem import WordNetLemmatizer
 
 
-def convert_to_lowerCase(text):
-      return text.lower()
-
-
-def remove_html_tags(text):
-    pattern = re.compile('<.*?>')
-
-    return pattern.sub("", text)
-
-
-def remove_emoji(text):
-   emoji_pattern = re.compile("["
-        u"\U0001F600-\U0001F64F"  # emoticons
-        u"\U0001F300-\U0001F5FF"  # symbols & pictographs
-        u"\U0001F680-\U0001F6FF"  # transport & map symbols
-        u"\U0001F1E0-\U0001F1FF"  # flags (iOS)
-                           "]+", flags=re.UNICODE)
-   return emoji_pattern.sub(r'', text)
-
-
-def remove_url(text):
-   clear = re.compile(r'https?://\S+|www\.\S+')
-
-   return  clear.sub(" ",text)
-
-
+# Text preprocessing
 def remove_stop_words(text):
-    STOPWORDS = set(stopwords.words('english'))
+    STOPWORDS ={'this', 'll', 'hers', 'few', 'didn', 'whom', 'because', 'shan', 'we', 'too', 'isn', 'yourself', 'be', 've', 'itself', 'from', 'doesn', 'ourselves', 'himself', 'been', 'up', 'she', "mustn't", 'them', "won't", 'its', 'just', "needn't", 'couldn', 'some', 'there', "shouldn't", 'yourselves', 'mustn', 't', 'over', 'weren', 'any', 'until', "wasn't", 'than', 'no', "doesn't", 'yours', 'him', 'being', 'our', 'me', 'then', 'doing', 'here', 'mightn', 'ain', 'ours', 'they', 'but', 'won', "you'd", 'are', "it's", 'haven', 'has', 'had', 'these', 'of', 'were', 'more', 'themselves', 'will', 'm', "aren't", 'and', 'about', 're', 'most', "should've", 'after', 'before', 'while', "hasn't", 'can', 'theirs', 'why', "hadn't", 'below', 'other', 'through', 'was', 'own', 'it', 'did', "you're", 'during', 'where', "you'll", 'have', 'i', 'the', 'to', 'wouldn', 'd', 'on', 'very', 'do', 'against', 'is', 'in', 'now', 'am', 'shouldn', 'if', 'how', 'hasn', 'herself', 'their', "shan't", 'off', "isn't", 'o', 'all', "weren't", 'at', 'further', 'he', "you've", 'between', 'such', 'myself', 'each', 'when', 'once', 'same', 'you', 'by', 'which', 'ma', 'as', "didn't", "don't", 'those', 's', 'or', 'into', 'an', 'so', 'wasn', 'her', "mightn't", 'a', 'y', 'for', 'above', 'aren', "she's", 'what', 'his', 'under', "haven't", "couldn't", 'with', 'needn', 'not', 'again', 'who', 'does', 'my', 'that', 'down', "wouldn't", 'should', 'nor', 'only', 'don', "that'll", 'out', 'your', 'hadn', 'having', 'both'}
     next_text=[]
     for w in text.split():
       if w in STOPWORDS:
@@ -44,48 +17,59 @@ def remove_stop_words(text):
       else:
         next_text.append(w)
 
-    x = next_text[:]
-    next_text.clear()
-    return " ".join(x)
+    return " ".join(next_text[:])
 
 
-def remove_punctuations(text):
-  puncutuatons =  '''!"#$%&\'()*+,-/:;?@[\\]^_{|}~`''' 
+def preprocess(text):
+      text = text.lower() # lowercase all text
 
-  for char in puncutuatons:    
-      text = text.replace(char,"")
+      pattern = re.compile('<.*?>') # remove html tags
+      text = pattern.sub("", text)
 
-  return text
+      # remove emoji
+      emoji_pattern = re.compile("["
+            u"\U0001F600-\U0001F64F"  # emoticons
+            u"\U0001F300-\U0001F5FF"  # symbols & pictographs
+            u"\U0001F680-\U0001F6FF"  # transport & map symbols
+            u"\U0001F1E0-\U0001F1FF"  # flags (iOS)
+                              "]+", flags=re.UNICODE)
+      text = emoji_pattern.sub(r'', text)
+
+      clear = re.compile(r'https?://\S+|www\.\S+') # remove urls
+      text = clear.sub(" ",text)
 
 
-def stemming(text):
-    ps = PorterStemmer()
-    result = []
-    for word in text.split():
-      result.append(ps.stem(word))
-    return " ".join(result)
- 
+      text = remove_stop_words(text) # remove stop words
 
+       # Remove references
+      text = re.sub(r'\[\d+\]', '', text)  # Removing [21].
+      text = re.sub(r'\[\w\]', '', text)   # Removing [j].
 
- 
-def text_processing(text): 
-      text= convert_to_lowerCase(text)
-      text = remove_html_tags(text)
-      text = remove_emoji(text)
-      text =  remove_url(text)
-      text = remove_stop_words(text)
-      text = remove_punctuations(text)
-      text = stemming(text)
+      #remove punctuations
+      punctuations = '''!"#$%&\'()*+,-/:;?@[\\]^_{|}~`'''
+      for char in punctuations:
+          text = text.replace(char,"")
+      # text = re.sub(r'[^a-z\s.]', '', text)
+
+      # lemmatization
+      lemmatizer = WordNetLemmatizer()
+      result = []
+      for word in text.split():
+          result.append(lemmatizer.lemmatize(word))
+      text =  " ".join(result)
+
+      # remove numbers
+      # text = ''.join([i for i in text if not i.isdigit()])
+
       return text
 
+
+
 def sent_tokenization(text):
-      # return text.split('. ' or '.')[:-1]
       senctences = text.split(".")[:-1]
       senctences = [i.strip() for i in senctences]
       return senctences
 
 def word_tokenization(sentence):
       words = sentence.split(" ")
-      words.remove(" ")
       return words
-  

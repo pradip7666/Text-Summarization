@@ -1,2 +1,2 @@
 # Text-Summarization
-Text summarization using clustering the similar sentences and NLP
+Text summarization using NLP and clustering the similar sentences. 
